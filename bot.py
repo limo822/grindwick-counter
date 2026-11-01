@@ -19,6 +19,7 @@ def get_players():
     return data["response"]["player_count"]
 
 
+
 def update_discord(players):
     token = os.environ["DISCORD_BOT_TOKEN"]
     channel_id = os.environ["DISCORD_CHANNEL_ID"]
@@ -39,9 +40,15 @@ def update_discord(players):
         }
     )
 
-    with urllib.request.urlopen(request) as response:
-        print("Discord:", response.status)
-        print("Nowa nazwa:", response.read().decode())
+    try:
+        with urllib.request.urlopen(request) as response:
+            print("Discord:", response.status)
+            print("Nowa nazwa:", response.read().decode())
+
+    except urllib.error.HTTPError as error:
+        print("Discord HTTP:", error.code)
+        print("Szczegóły:", error.read().decode())
+        raise
 
 
 if __name__ == "__main__":
