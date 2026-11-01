@@ -3,8 +3,11 @@ name: Grindwick All-Time Peak
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   update-peak:
@@ -24,3 +27,13 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           PEAK_CHANNEL_ID: ${{ secrets.PEAK_CHANNEL_ID }}
+
+      - name: Save new record
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add peak.txt
+          git diff --cached --quiet || {
+            git commit -m "Update Grindwick peak"
+            git push
+          }
