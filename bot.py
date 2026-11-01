@@ -28,7 +28,7 @@ def update_discord(players):
     url = f"https://discord.com/api/v10/channels/{channel_id}"
 
     payload = json.dumps({
-        "name": f"🎮Graczy w Grze: {players}🎮"
+        "name": f"🎮Players In Game: {players}🎮"
     }).encode()
 
     request = urllib.request.Request(
