@@ -36,9 +36,11 @@ def update_discord(players):
         data=payload,
         method="PATCH",
         headers={
-            "Authorization": f"Bot {token}",
-            "Content-Type": "application/json"
-        }
+    "Authorization": f"Bot {token}",
+    "Content-Type": "application/json",
+    "User-Agent": "DiscordBot (https://discord.com, 1.0)",
+    "Accept": "application/json"
+}
     )
 
     try:
