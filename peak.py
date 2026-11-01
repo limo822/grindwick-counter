@@ -1,52 +1,43 @@
 
 import os
-import re
 import json
 import urllib.request
-from html.parser import HTMLParser
+
+APP_ID = "5353310"
+PEAK_FILE = "peak.txt"
 
 
-class TextExtractor(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.parts = []
-
-    def handle_data(self, data):
-        self.parts.append(data)
-
-    def get_text(self):
-        return " ".join(self.parts)
-
-
-def get_all_time_peak():
-    url = "https://steamdb.info/app/5353310/charts/"
+def get_players():
+    url = (
+        "https://api.steampowered.com/"
+        "ISteamUserStats/GetNumberOfCurrentPlayers/v1/"
+        f"?appid={APP_ID}"
+    )
 
     request = urllib.request.Request(
         url,
-        headers={
-            "User-Agent": "Mozilla/5.0 (compatible; GrindwickCounter/1.0)",
-            "Accept": "text/html"
-        }
+        headers={"User-Agent": "GrindwickCounter/1.0"}
     )
 
     with urllib.request.urlopen(request, timeout=30) as response:
-        html = response.read().decode("utf-8", errors="replace")
+        data = json.loads(response.read().decode())
 
-    parser = TextExtractor()
-    parser.feed(html)
+    return int(data["response"]["player_count"])
 
-    text = re.sub(r"\s+", " ", parser.get_text())
 
-    match = re.search(
-        r"(\d[\d,]*)\s+all-time peak",
-        text,
-        re.IGNORECASE
-    )
+def get_and_save_peak(current):
+    with open(PEAK_FILE, "r") as file:
+        peak = int(file.read().strip())
 
-    if not match:
-        raise ValueError("Nie znaleziono rekordu all-time peak na SteamDB")
+    if current > peak:
+        peak = current
 
-    return int(match.group(1).replace(",", ""))
+        with open(PEAK_FILE, "w") as file:
+            file.write(str(peak))
+
+        print("NOWY REKORD!", peak)
+
+    return peak
 
 
 def update_discord(peak):
@@ -73,10 +64,15 @@ def update_discord(peak):
 
     with urllib.request.urlopen(request, timeout=30) as response:
         print("Discord:", response.status)
-        print("Nowy rekord:", peak)
+        print("Rekord Grindwick:", peak)
 
 
 if __name__ == "__main__":
-    peak = get_all_time_peak()
-    print("Historyczny rekord Grindwick:", peak)
+    current = get_players()
+    print("Aktualnie gra:", current)
+
+    peak = get_and_save_peak(current)
+    print("Najwyższy rekord:", peak)
+
     update_discord(peak)
+
